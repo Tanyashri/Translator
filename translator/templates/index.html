@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English to Kannada Translator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h1>English to Kannada</h1>
+                <p class="subtitle">Professional Translation with Voice Output</p>
+            </div>
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('text')">
+                    <i class="fas fa-pen-to-square"></i> Text Translator
+                </button>
+                <button class="tab-btn" onclick="switchTab('voice')">
+                    <i class="fas fa-microphone"></i> Voice Translator
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- TEXT TRANSLATOR TAB -->
+            <div id="text-tab" class="tab-content active">
+                <!-- Input Section -->
+                <div class="section input-section">
+                    <label for="englishInput" class="label">English Text</label>
+                    <textarea 
+                        id="englishInput" 
+                        class="textarea"
+                        placeholder="Enter English text here... (max 500 characters)"
+                        maxlength="500"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/500
+                    </div>
+                </div>
+
+                <!-- Translation Output Section -->
+                <div class="section output-section" id="outputSection" style="display: none;">
+                    <div class="output-group">
+                        <h3 class="output-title">Kannada Translation</h3>
+                        <div class="output-box" id="kannadaOutput"></div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="copyBtn" title="Copy Kannada text">
+                            📋 Copy
+                        </button>
+                        <button class="btn btn-success" id="playAudioBtn" title="Play Kannada audio">
+                            🔊 Play Voice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Button Controls -->
+                <div class="button-group">
+                    <button class="btn btn-primary" id="translateBtn">
+                        ✨ Translate
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- VOICE TRANSLATOR TAB -->
+            <div id="voice-tab" class="tab-content">
+                <!-- Voice Input Section -->
+                <div class="section input-section">
+                    <label class="label">🎤 Voice Input</label>
+                    <div class="voice-input-controls">
+                        <button class="btn btn-success" id="startRecordBtn" title="Start recording">
+                            ⏺️ Start Recording
+                        </button>
+                        <button class="btn btn-danger" id="stopRecordBtn" title="Stop recording" style="display: none;">
+                            ⏹️ Stop Recording
+                        </button>
+                        <span id="recordingStatus" class="recording-status"></span>
+                    </div>
+                    <div id="recordingTime" style="text-align: center; margin-top: 10px; font-weight: bold; color: #667eea;"></div>
+                </div>
+
+                <!-- Text Input Section -->
+                <div class="section input-section">
+                    <label for="voiceEnglishInput" class="label">📝 English Text (or use voice above)</label>
+                    <textarea 
+                        id="voiceEnglishInput" 
+                        class="textarea"
+                        placeholder="Enter English text here or record voice above... (max 500 characters)"
+                        maxlength="500"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="voiceCharCount">0</span>/500
+                    </div>
+                </div>
+
+                <!-- Voice Translation Output Section -->
+                <div class="section voice-output-section" id="voiceOutputSection" style="display: none;">
+                    <!-- English Audio -->
+                    <div class="output-group">
+                        <h3 class="output-title">🇬🇧 English Audio</h3>
+                        <div class="voice-control">
+                            <button class="btn btn-success" id="playEnglishBtn" title="Play English audio">
+                                ▶️ Play English
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kannada Translation -->
+                    <div class="output-group">
+                        <h3 class="output-title">🇮🇳 Kannada Translation</h3>
+                        <div class="output-box" id="voiceKannadaOutput"></div>
+                    </div>
+
+                    <!-- Kannada Audio -->
+                    <div class="output-group">
+                        <h3 class="output-title">🇮🇳 Kannada Audio</h3>
+                        <div class="voice-control">
+                            <button class="btn btn-success" id="playKannadaBtn" title="Play Kannada audio">
+                                ▶️ Play Kannada
+                            </button>
+                            <button class="btn btn-secondary" id="voiceCopyBtn" title="Copy Kannada text">
+                                📋 Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button Controls -->
+                <div class="button-group">
+                    <button class="btn btn-primary" id="voiceTranslateBtn">
+                        ✨ Translate with Voice
+                    </button>
+                    <button class="btn btn-secondary" id="voiceClearBtn">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div class="message" id="errorMessage" style="display: none;"></div>
+            <div class="message success" id="successMessage" style="display: none;"></div>
+
+            <!-- Audio Players (Hidden) -->
+            <audio id="audioPlayer" style="display: none;">
+                <source src="" type="audio/mpeg">
+            </audio>
+            <audio id="englishAudioPlayer" style="display: none;">
+                <source src="" type="audio/mpeg">
+            </audio>
+            <audio id="kannadaAudioPlayer" style="display: none;">
+                <source src="" type="audio/mpeg">
+            </audio>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><i class="fas fa-heart"></i> English to Kannada Translator | Built with <i class="fas fa-flask"></i> Flask & <i class="fas fa-python"></i> Python <i class="fas fa-heart"></i></p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements - Text Tab
+        const englishInput = document.getElementById('englishInput');
+        const charCount = document.getElementById('charCount');
+        const translateBtn = document.getElementById('translateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const playAudioBtn = document.getElementById('playAudioBtn');
+        const outputSection = document.getElementById('outputSection');
+        const kannadaOutput = document.getElementById('kannadaOutput');
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        // DOM Elements - Voice Tab
+        const voiceEnglishInput = document.getElementById('voiceEnglishInput');
+        const voiceCharCount = document.getElementById('voiceCharCount');
+        const voiceTranslateBtn = document.getElementById('voiceTranslateBtn');
+        const voiceClearBtn = document.getElementById('voiceClearBtn');
+        const voiceCopyBtn = document.getElementById('voiceCopyBtn');
+        const playEnglishBtn = document.getElementById('playEnglishBtn');
+        const playKannadaBtn = document.getElementById('playKannadaBtn');
+        const voiceOutputSection = document.getElementById('voiceOutputSection');
+        const voiceKannadaOutput = document.getElementById('voiceKannadaOutput');
+        const englishAudioPlayer = document.getElementById('englishAudioPlayer');
+        const kannadaAudioPlayer = document.getElementById('kannadaAudioPlayer');
+
+        // Message Elements
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        // ===== TAB SWITCHING =====
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('text-tab').classList.remove('active');
+            document.getElementById('voice-tab').classList.remove('active');
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // ===== TEXT TRANSLATOR FUNCTIONALITY =====
+        
+        // Character count update
+        englishInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        // Translate button click handler
+        translateBtn.addEventListener('click', async function() {
+            const englishText = englishInput.value.trim();
+
+            // Clear previous messages
+            hideMessages();
+
+            // Validate input
+            if (!englishText) {
+                showError('Please enter English text to translate');
+                return;
+            }
+
+            // Disable button and show loading state
+            translateBtn.disabled = true;
+            translateBtn.textContent = '⏳ Translating...';
+
+            try {
+                // Send POST request to Flask backend
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: englishText })
+                });
+
+                const data = await response.json();
+
+                // Check if translation was successful
+                if (data.success) {
+                    kannadaOutput.textContent = data.kannada;
+                    audioPlayer.src = data.audio_url;
+                    outputSection.style.display = 'block';
+                    showSuccess('Translation successful!');
+                } else {
+                    showError(data.error || 'Translation failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error connecting to server: ' + error.message);
+            } finally {
+                // Re-enable button
+                translateBtn.disabled = false;
+                translateBtn.textContent = '✨ Translate';
+            }
+        });
+
+        // Clear button click handler
+        clearBtn.addEventListener('click', function() {
+            englishInput.value = '';
+            charCount.textContent = '0';
+            outputSection.style.display = 'none';
+            hideMessages();
+            audioPlayer.src = '';
+        });
+
+        // Copy button click handler
+        copyBtn.addEventListener('click', function() {
+            const kannadaText = kannadaOutput.textContent;
+            navigator.clipboard.writeText(kannadaText).then(() => {
+                showSuccess('Kannada text copied to clipboard!');
+                setTimeout(() => hideMessages(), 2000);
+            }).catch(err => {
+                showError('Failed to copy text');
+            });
+        });
+
+        // Play audio button click handler
+        playAudioBtn.addEventListener('click', function() {
+            if (audioPlayer.src) {
+                audioPlayer.play();
+                showSuccess('Playing Kannada audio...');
+                setTimeout(() => hideMessages(), 2000);
+            } else {
+                showError('No audio available');
+            }
+        });
+
+        // ===== VOICE TRANSLATOR FUNCTIONALITY =====
+
+        // Character count update for voice tab
+        voiceEnglishInput.addEventListener('input', function() {
+            voiceCharCount.textContent = this.value.length;
+        });
+
+        // ===== VOICE RECORDING FUNCTIONALITY =====
+        const startRecordBtn = document.getElementById('startRecordBtn');
+        const stopRecordBtn = document.getElementById('stopRecordBtn');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const recordingTime = document.getElementById('recordingTime');
+
+        let isRecording = false;
+        let recognition = null;
+
+        // Initialize Web Speech API
+        function initializeSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                showError('Speech Recognition not supported. Please use Chrome, Edge, or Firefox.');
+                return null;
+            }
+
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+            rec.continuous = false;
+            rec.interimResults = true;
+
+            rec.addEventListener('start', function() {
+                isRecording = true;
+                recordingStatus.textContent = '🎤 Listening...';
+                recordingStatus.style.color = '#27ae60';
+                startRecordBtn.style.display = 'none';
+                stopRecordBtn.style.display = 'block';
+                showSuccess('Recording started! Speak now...');
+            });
+
+            rec.addEventListener('result', function(event) {
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // Update textarea with recognized text
+                voiceEnglishInput.value = finalTranscript || interimTranscript;
+                voiceCharCount.textContent = voiceEnglishInput.value.length;
+            });
+
+            rec.addEventListener('end', function() {
+                isRecording = false;
+                recordingStatus.textContent = '✅ Recording complete';
+                recordingStatus.style.color = '#27ae60';
+                startRecordBtn.style.display = 'block';
+                stopRecordBtn.style.display = 'none';
+                
+                setTimeout(() => {
+                    recordingStatus.textContent = '';
+                }, 2000);
+            });
+
+            rec.addEventListener('error', function(event) {
+                isRecording = false;
+                recordingStatus.textContent = '';
+                startRecordBtn.style.display = 'block';
+                stopRecordBtn.style.display = 'none';
+                showError('Speech recognition error: ' + event.error);
+            });
+
+            return rec;
+        }
+
+        // Start voice input
+        startRecordBtn.addEventListener('click', function() {
+            if (!isRecording) {
+                recognition = initializeSpeechRecognition();
+                if (recognition) {
+                    recognition.start();
+                }
+            }
+        });
+
+        // Stop voice input
+        stopRecordBtn.addEventListener('click', function() {
+            if (isRecording && recognition) {
+                recognition.stop();
+            }
+        });
+
+
+        // Voice translate button click handler
+        voiceTranslateBtn.addEventListener('click', async function() {
+            const englishText = voiceEnglishInput.value.trim();
+
+            // Clear previous messages
+            hideMessages();
+
+            // Validate input
+            if (!englishText) {
+                showError('Please enter English text to translate');
+                return;
+            }
+
+            // Disable button and show loading state
+            voiceTranslateBtn.disabled = true;
+            voiceTranslateBtn.textContent = '⏳ Processing...';
+
+            try {
+                // Send POST request to Flask backend
+                const response = await fetch('/api/voice-translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: englishText })
+                });
+
+                const data = await response.json();
+
+                // Check if translation was successful
+                if (data.success) {
+                    voiceKannadaOutput.textContent = data.kannada;
+                    englishAudioPlayer.src = data.english_audio_url;
+                    kannadaAudioPlayer.src = data.kannada_audio_url;
+                    voiceOutputSection.style.display = 'block';
+                    showSuccess('Voice translation successful!');
+                } else {
+                    showError(data.error || 'Voice translation failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error connecting to server: ' + error.message);
+            } finally {
+                // Re-enable button
+                voiceTranslateBtn.disabled = false;
+                voiceTranslateBtn.textContent = '✨ Translate with Voice';
+            }
+        });
+
+        // Voice clear button
+        voiceClearBtn.addEventListener('click', function() {
+            voiceEnglishInput.value = '';
+            voiceCharCount.textContent = '0';
+            voiceOutputSection.style.display = 'none';
+            hideMessages();
+            englishAudioPlayer.src = '';
+            kannadaAudioPlayer.src = '';
+        });
+
+        // Play English audio
+        playEnglishBtn.addEventListener('click', function() {
+            if (englishAudioPlayer.src) {
+                englishAudioPlayer.play();
+                showSuccess('Playing English audio...');
+                setTimeout(() => hideMessages(), 2000);
+            } else {
+                showError('No English audio available');
+            }
+        });
+
+        // Play Kannada audio
+        playKannadaBtn.addEventListener('click', function() {
+            if (kannadaAudioPlayer.src) {
+                kannadaAudioPlayer.play();
+                showSuccess('Playing Kannada audio...');
+                setTimeout(() => hideMessages(), 2000);
+            } else {
+                showError('No Kannada audio available');
+            }
+        });
+
+        // Voice copy button
+        voiceCopyBtn.addEventListener('click', function() {
+            const kannadaText = voiceKannadaOutput.textContent;
+            navigator.clipboard.writeText(kannadaText).then(() => {
+                showSuccess('Kannada text copied to clipboard!');
+                setTimeout(() => hideMessages(), 2000);
+            }).catch(err => {
+                showError('Failed to copy text');
+            });
+        });
+
+        // ===== UTILITY FUNCTIONS =====
+
+        // Allow Enter key (Ctrl+Enter) to translate in text tab
+        englishInput.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                translateBtn.click();
+            }
+        });
+
+        // Allow Enter key (Ctrl+Enter) to translate in voice tab
+        voiceEnglishInput.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                voiceTranslateBtn.click();
+            }
+        });
+
+        // Helper functions for messages
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = '✅ ' + message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

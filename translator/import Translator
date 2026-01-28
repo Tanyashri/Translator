@@ -1,0 +1,3 @@
+Help on method translate in module googletrans.client:
+
+ttrraannssllaattee(text: str, dest='en', src='auto') method of googletrans.client.Translator instance
