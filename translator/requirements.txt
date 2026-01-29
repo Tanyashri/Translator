@@ -1,6 +1,0 @@
-Flask==2.3.0
-googletrans==4.0.0rc1
-gTTS==2.3.1
-Werkzeug==2.3.0
-gyp==0.1
-six==1.16.0
